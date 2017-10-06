@@ -1,41 +1,24 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Requires the following plugins:
-# https://github.com/dotless-de/vagrant-vbguest
-# vagrant plugin install vagrant-vbguest
-
 Vagrant.configure("2") do |config|
 
-	# ubuntu/xenial64 is unusable, and does not have the vagrant user - see 
-	# https://bugs.launchpad.net/cloud-images/+bug/1569237
-	# ubuntu/trusty64 has a courrupted dictionaries-common which is not easy to fix
-  config.vm.box = "boxcutter/ubuntu1604-desktop"
-  config.vm.box_version = "17.0907.1"
-
+  config.vm.box = "terrywang/archlinux"
+	
   config.vm.provider "virtualbox" do |vb|
     vb.gui = true
     vb.memory = "2048"
   end
+	
+  config.vm.provision "shell", inline: <<-SHELL
+    pacman -Syy
+		pacman -S --needed --noconfirm xorg-server xfce4
+		pacman -S --needed --noconfirm eclipse-java maven
+		pacman -S --needed --noconfirm graphviz
+  SHELL
 
-  config.vm.provision "shell",
-    name: "Basic setup, including a desktop",
-    path: "basic-setup.sh"
-
-  config.vm.provision "shell",
-    name: "Install Java 8",
-    path: "install-java8.sh"
-
-  config.vm.provision "shell",
-    name: "Install Eclipse",
-    path: "install-eclipse.sh"
-
-  config.vm.provision "shell",
-    name: "Install Apache Maven",
-    path: "install-maven.sh"
-
-  config.vm.provision "shell",
-    name: "Install SQuirreL",
-    path: "install-squirrel.sh"
-		
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+		yaourt -S --needed --noconfirm squirrel-sql
+  SHELL
+	
 end
